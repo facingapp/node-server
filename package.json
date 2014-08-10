@@ -1,0 +1,23 @@
+{
+	"name": "facing_server",
+	"preferGlobal": false,
+	"version": "0.0.1",
+	"description": "Server for Facing App",
+	"author": "Manifest Interactive <hello@manifestinteractive.com>",
+	"main": "server.js",
+	"private": true,
+	"license": "BSD",
+	"engines": {
+		"node": "0.10.x"
+	},
+	"contributors": [
+		{
+			"name": "Peter Schmalfeldt",
+			"email": "peter@clickwithmenow.com"
+		}
+	],
+	"dependencies": {
+		"express": "3.4.8",
+		"socket.io": "1.0.6"
+	}
+}

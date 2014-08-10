@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Facing App Launcher</title>
+</head>
+<body>
+
+    <!-- iframe used for attempting to load a custom protocol -->
+    <iframe style="display:none" height="0" width="0" id="loader"></iframe>
+
+    <script>
+    (function(){
+
+        var app_name_ios = 'twitter'; // twitter, just for testing
+        var app_id_ios = '333903271'; // 333903271 is twitters id, just for testing
+        var app_id_android = 'com.twitter.android'; // com.twitter.android is twitters id, just for testing
+        var invite = window.location.pathname;
+            invite = invite.replace('/invite/', '');
+
+        // For desktop browser, remember to pass though any metadata on the link for deep linking
+        var fallbackLink = 'http://youfacing.me/invite/' + invite;
+
+        // Simple device detection
+        var isiOS = navigator.userAgent.match('iPad') || navigator.userAgent.match('iPhone') || navigator.userAgent.match('iPod'),
+            isAndroid = navigator.userAgent.match('Android');
+
+        // Mobile
+        if (isiOS || isAndroid)
+        {
+            // Load our custom protocol in the iframe, for Chrome and Opera this hides the error dialog (which is actually HTML)
+            // for iOS we will get a popup error if this protocol is not supported, but it won't block javascript
+
+            document.getElementById('loader').src = 'facing://invite/' + invite;
+
+            // The fallback link for Android needs to be https:// rather than market:// or the device will try to
+            // load both URLs and only the last one will win. (Especially FireFox, where an "Are You Sure" dialog will appear)
+            // on iOS we can link directly to the App Store as our app switch will fire prior to the switch
+            // If you have a mobile web app, your fallback could be that instead.
+            fallbackLink = (isAndroid)
+                ? 'https://play.google.com/store/apps/details?id=' + app_id_android
+                : 'itms-apps://itunes.apple.com/app/'+ app_name_ios +'/id' + app_id_ios + '?mt=8';
+        }
+
+        // Now we just wait for everything to execute, if the user is redirected to your custom app
+        // the timeout below will never fire, if a custom app is not present (or the user is on the Desktop)
+        // we will replace the current URL with the fallbackLink (store URL or desktop URL as appropriate)
+        window.setTimeout(function(){
+            window.location.replace(fallbackLink);
+        }, 1);
+
+    })();
+    </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+![Facing Logo](https://raw.githubusercontent.com/manifestinteractive/facing/master/assets/logo/rectangle/logo_rectangle.jpg)
+
 Facing Server
 =============
 
@@ -59,3 +61,13 @@ server {
     }
 }
 ```
+
+iOS & Android Application
+---
+
+If you would like to know what we're running on iOS & Android, checkout our [facing](https://github.com/manifestinteractive/facing) repository.
+
+License
+---
+
+![License](http://github.socketbug.com/lgplv3.png "LGPL v3 license") **Facing** is currently licensed under the LGPL v3 license.

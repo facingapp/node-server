@@ -56,35 +56,40 @@ app.get('/invite/:id', function(req, res){
 io.sockets.on('connection', function(socket){
 
 	/* Create Private Space for Friends */
-	socket.on('createSpace', function(space){
+	socket.on('createSpace', function(space, name){
+		socket.name = name;
 		spaces.push(space);
 		socket.emit('updateSpaces', spaces, socket.space);
 		socket.broadcast.emit('updateSpaces', spaces, socket.space);
 	});
 
-	/* Add Person to initial Holding Space */
-	socket.on('addFriend', function(name){
-		socket.name = name;
-		socket.space = 'Main';
-		friends[name] = name;
-		socket.join('Main');
-		socket.emit('updateSpaces', spaces, 'Main');
-	});
-
 	/* Switch Person to Private Space */
-	socket.on('switchSpace', function(newspace){
-		var oldspace = socket.space;
+	socket.on('switchSpace', function(space, name){
+		socket.name = name;
 		socket.leave(socket.space);
-		socket.join(newspace);
-		socket.space = newspace;
-		socket.emit('updateSpaces', spaces, newspace);
+		socket.join(space);
+		socket.space = space;
+		socket.emit('updateSpaces', spaces, space);
+		io.sockets['in'](socket.space).emit('receiveData', socket.name, data);
 
 		// @todo: make sure there are a max of two people in a space
 	});
 
+	/* Person left Private Space */
+	socket.on('leaveSpace', function(){
+
+		delete friends[socket.name];
+		io.sockets.emit('updatefriends', friends);
+		io.sockets['in'](socket.space).emit('receiveData', socket.name, data);
+
+		socket.leave(socket.space);
+
+		// @todo: check if the room is empty and remove it
+	});
+
 	/* Broadcast Users Data into Private Space */
 	socket.on('sendData', function(data){
-		io.sockets["in"](socket.space).emit('receiveData', socket.name, data);
+		io.sockets['in'](socket.space).emit('receiveData', socket.name, data);
 	});
 
 	/* Disconnect Person from Space */

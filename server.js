@@ -49,7 +49,15 @@ app.param('id', /^[0-9a-zA-Z]+$/);
 
 /* Check if this is an invite and try to launch app */
 app.get('/invite/:id', function(req, res){
-	res.sendfile('public/invite.html');
+	if(process.env.NODE_ENV == 'development')
+	{
+		res.sendfile('public/dev.html');
+	}
+	else
+	{
+		res.sendfile('public/invite.html');
+	}
+
 });
 
 /* Listen for incomming messages */

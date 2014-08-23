@@ -1,23 +1,38 @@
 {
-	"name": "facing_server",
-	"preferGlobal": false,
-	"version": "0.0.1",
-	"description": "Server for Facing App",
-	"author": "Manifest Interactive <hello@manifestinteractive.com>",
-	"main": "server.js",
-	"private": true,
-	"license": "BSD",
-	"engines": {
-		"node": "0.10.x"
+	"name": "FacingServer",
+	"description": "Facing App Node Server",
+	"homepage": "https://youfacing.me",
+	"version": "0.3.0",
+	"license": "GPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/manifestinteractive/facing-server.git#stable"
+	},
+	"author": {
+		"name": "Manifest Interactive, LLC,",
+		"email": "hello@manifestinteractive.com",
+		"url": "http://manifestinteractive.com"
 	},
 	"contributors": [
 		{
-			"name": "Peter Schmalfeldt",
-			"email": "peter@clickwithmenow.com"
+			"name": "Tamas Piros",
+			"email": "me@tamas.io",
+			"url": "http://tamas.io"
 		}
 	],
-	"dependencies": {
-		"express": "3.4.8",
-		"socket.io": "1.0.6"
+	"bugs": {
+		"url": "https://github.com/manifestinteractive/facing-server/issues",
+		"email": "hello@youfacing.me"
+	},
+	"devDependencies": {
+		"ejs": "~0.8.5",
+		"express": "~3.4.8",
+		"node-uuid": "~1.4.1",
+		"nodemon": "~1.0.13",
+		"socket.io": "~0.9.16",
+		"underscore": "~1.5.2"
+	},
+	"scripts": {
+		"start": "node server.js"
 	}
 }

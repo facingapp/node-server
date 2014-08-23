@@ -33,7 +33,7 @@ $ sudo nano /etc/nginx/conf.d/facing.conf
 
 ```conf
 upstream facing_upstream {
-    server 127.0.0.1:8080 fail_timeout=120s;
+    server 127.0.0.1:4000 fail_timeout=120s;
     keepalive 8;
 }
 
@@ -67,7 +67,15 @@ iOS & Android Application
 
 If you would like to know what we're running on iOS & Android, checkout our [facing](https://github.com/manifestinteractive/facing) repository.
 
-License
----
+Credits
+===
+Special Thanks to [@tamaspiros](https://github.com/tamaspiros) for the development of the [Advanced Chat](https://github.com/tamaspiros/advanced-chat) project, which the Facing Server is heavily based on.
 
-![License](http://github.socketbug.com/lgplv3.png "LGPL v3 license") **Facing** is currently licensed under the LGPL v3 license.
+License
+===
+
+![OSI Approved License](http://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png "OSI Approved License")
+
+![LGPL v3 license](http://www.gnu.org/graphics/lgplv3-147x51.png "LGPL v3 license")
+
+**Facing** is currently licensed under the LGPL v3 license.

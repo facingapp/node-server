@@ -19,7 +19,7 @@ app.configure(function()
 	app.use('/components', express.static(__dirname + '/components'));
 	app.use('/js', express.static(__dirname + '/js'));
 	app.use('/icons', express.static(__dirname + '/icons'));
-	app.set('views', __dirname + '/views');
+	app.set('views', __dirname + '/public');
 	app.engine('html', require('ejs').renderFile);
 });
 
@@ -63,7 +63,7 @@ server.listen(app.get('port'), app.get('ipaddr'), function()
 	console.log('Facing App Server Started in ' + process.env.NODE_ENV + ' mode on port ' + configuration.app.port);
 });
 
-io.set('log level', 5);
+io.set('log level', 1);
 
 var people = {};
 var rooms = {};
@@ -72,9 +72,13 @@ var chatHistory = {};
 
 io.sockets.on('connection', function(socket)
 {
-
-	socket.on('joinserver', function(name, device)
+	socket.on('joinserver', function(name, device, fn)
 	{
+		if(!name || name === '')
+		{
+			return false;
+		}
+
 		var exists = false;
 		var ownerRoomID = inRoomID = null;
 
@@ -102,6 +106,13 @@ io.sockets.on('connection', function(socket)
 			}
 			while(!exists);
 			socket.emit('exists', {msg: 'The username already exists, please pick another one.', proposedName: proposedName});
+
+			fn({
+				success: false,
+				message: 'You are already on the server.',
+				name: name,
+				device: device
+			});
 		}
 		else
 		{
@@ -116,6 +127,13 @@ io.sockets.on('connection', function(socket)
 			// extra emit for GeoLocation
 			socket.emit('joined');
 			sockets.push(socket);
+
+			fn({
+				success: true,
+				message: 'You have Joined the Server',
+				name: name,
+				device: device
+			});
 		}
 	});
 
@@ -124,82 +142,24 @@ io.sockets.on('connection', function(socket)
 		fn({people: people});
 	});
 
-	// we know which country the user is from
-	socket.on('countryUpdate', function(data)
-	{
-		country = data.country.toLowerCase();
-		people[socket.id].country = country;
-		io.sockets.emit('update-people', {people: people, count: sizePeople});
-	});
-
-	socket.on('typing', function(data)
-	{
-		if(typeof people[socket.id] !== 'undefined')
-		{
-			io.sockets.in(socket.room).emit('isTyping', {isTyping: data, person: people[socket.id].name});
-		}
-	});
-
 	socket.on('send', function(msg)
 	{
-		// process.exit(1);
-		var re = /^[w]:.*:/;
-		var whisper = re.test(msg);
-		var whisperStr = msg.split(':');
-		var found = false;
-		if(whisper)
+		if(io.sockets.manager.roomClients[socket.id]['/' + socket.room] !== undefined)
 		{
-			var whisperTo = whisperStr[1];
-			var keys = Object.keys(people);
-			if(keys.length != 0)
-			{
-				for(var i = 0; i < keys.length; i++)
-				{
-					if(people[keys[i]].name === whisperTo)
-					{
-						var whisperId = keys[i];
-						found = true;
+			io.sockets.in(socket.room).emit('receiveData', people[socket.id], msg);
 
-						//can't whisper to ourselves
-						if(socket.id === whisperId)
-						{
-							socket.emit('update', 'You can\'t whisper to yourself.');
-						}
-						break;
-					}
-				}
-			}
-			if(found && socket.id !== whisperId)
+			if(_.size(chatHistory[socket.room]) > 10)
 			{
-				var whisperTo = whisperStr[1];
-				var whisperMsg = whisperStr[2];
-				socket.emit('whisper', {name: 'You'}, whisperMsg);
-				io.sockets.socket(whisperId).emit('whisper', people[socket.id], whisperMsg);
+				chatHistory[socket.room].splice(0, 1);
 			}
 			else
 			{
-				socket.emit('update', 'Can\'t find ' + whisperTo);
+				chatHistory[socket.room].push(people[socket.id].name + ': ' + msg);
 			}
 		}
 		else
 		{
-			if(io.sockets.manager.roomClients[socket.id]['/' + socket.room] !== undefined)
-			{
-				io.sockets.in(socket.room).emit('chat', people[socket.id], msg);
-				socket.emit('isTyping', false);
-				if(_.size(chatHistory[socket.room]) > 10)
-				{
-					chatHistory[socket.room].splice(0, 1);
-				}
-				else
-				{
-					chatHistory[socket.room].push(people[socket.id].name + ': ' + msg);
-				}
-			}
-			else
-			{
-				socket.emit('update', 'Please connect to a room.');
-			}
+			socket.emit('update', 'Unable to Share Data');
 		}
 	});
 
@@ -215,6 +175,14 @@ io.sockets.on('connection', function(socket)
 	// Room functions
 	socket.on('createRoom', function(name, fn)
 	{
+		if(typeof people[socket.id] === 'undefined')
+		{
+			fn({ success: false, message: 'Unable to Create Room' });
+
+			return false;
+		}
+
+
 		if(people[socket.id].inroom)
 		{
 			socket.emit('update', 'You are in a room. Please leave it first to create your own.');
@@ -236,6 +204,7 @@ io.sockets.on('connection', function(socket)
 
 			people[socket.id].owns = id;
 			people[socket.id].inroom = id;
+			people[socket.id].user_mode = 'host';
 
 			room.addPerson(socket.id);
 
@@ -280,26 +249,58 @@ io.sockets.on('connection', function(socket)
 		}
 	});
 
-	socket.on('joinRoom', function(id, user_id, user_mode)
+	socket.on('joinRoom', function(id, user_id, user_mode, fn)
 	{
 		if(typeof people[socket.id] !== 'undefined')
 		{
 			var room = rooms[id];
+
+			if(!room)
+			{
+				fn({ success: false, message: 'Invitation Code is no longer valid.' });
+
+				return false;
+			}
+
+			if(typeof room.owner === 'undefined')
+			{
+				socket.emit('update', 'Invalid Attempt to Connect');
+				fn({ success: false, message: 'Invalid Attempt to Connect' });
+
+				return false;
+			}
+
+			// check if there are to many people in the private room
+			if(room.private === true && room.people.length >= room.peopleLimit)
+			{
+				socket.emit('update', 'To Many People Connected');
+				fn({ success: false, message: 'To Many People Connected' });
+
+				console.log('To Many People Connected');
+
+				console.log(room);
+
+				return false;
+			}
+
 			if(socket.id === room.owner)
 			{
 				socket.emit('update', 'You are the owner of this room and you have already been joined.');
+				fn({ success: false, message: 'You are the owner of this room and you have already been joined.' });
 			}
 			else
 			{
 				if(_.contains((room.people), socket.id))
 				{
 					socket.emit('update', 'You have already joined this room.');
+					fn({ success: false, message: 'You have already joined this room.' });
 				}
 				else
 				{
 					if(people[socket.id].inroom !== null)
 					{
 						socket.emit('update', 'You are already in a room (' + rooms[people[socket.id].inroom].name + '), please leave it first to join another room.');
+						fn({ success: false, message: 'You are already in a room (' + rooms[people[socket.id].inroom].name + '), please leave it first to join another room.' });
 					}
 					else
 					{
@@ -325,6 +326,8 @@ io.sockets.on('connection', function(socket)
 						{
 							socket.emit('history', chatHistory[socket.room]);
 						}
+
+						fn({ success: true, message: user.name + ' has connected to ' + room.name + ' room.' });
 					}
 				}
 			}
@@ -332,6 +335,7 @@ io.sockets.on('connection', function(socket)
 		else
 		{
 			socket.emit('update', 'Please enter a valid name first.');
+			fn({ success: false, message: 'Please enter a valid name first.' });
 		}
 	});
 

@@ -4,9 +4,9 @@ function Room(name, id, owner)
 	this.id = id;
 	this.owner = owner;
 	this.people = [];
-	this.peopleLimit = 4;
+	this.peopleLimit = 2;
 	this.status = 'available';
-	this.private = false;
+	this.private = true;
 }
 
 Room.prototype.addPerson = function(personID)
@@ -29,6 +29,36 @@ Room.prototype.removePerson = function(person)
 		}
 	}
 	this.people.remove(personIndex);
+};
+
+Room.prototype.hasHost = function()
+{
+	var found = false;
+	for(var i = 0; i < this.people.length; i++)
+	{
+		if(this.people[i].user_mode === 'host')
+		{
+			found = true;
+			break;
+		}
+	}
+
+	return found;
+};
+
+Room.prototype.hasGuest = function()
+{
+	var found = false;
+	for(var i = 0; i < this.people.length; i++)
+	{
+		if(this.people[i].user_mode === 'guest')
+		{
+			found = true;
+			break;
+		}
+	}
+
+	return found;
 };
 
 Room.prototype.getPerson = function(personID)

@@ -63,7 +63,7 @@ server.listen(app.get('port'), app.get('ipaddr'), function()
 	console.log('Facing App Server Started in ' + process.env.NODE_ENV + ' mode on port ' + configuration.app.port);
 });
 
-io.set('log level', 1);
+io.set('log level', 5);
 
 var people = {};
 var rooms = {};
@@ -76,6 +76,13 @@ io.sockets.on('connection', function(socket)
 	{
 		if(!name || name === '')
 		{
+			fn({
+				success: false,
+				message: 'Failed to Connect to Server',
+				name: name,
+				device: device
+			});
+
 			return false;
 		}
 
@@ -183,7 +190,7 @@ io.sockets.on('connection', function(socket)
 		}
 
 
-		if(people[socket.id].inroom)
+		if(typeof people[socket.id] !== 'undefined' && people[socket.id].inroom)
 		{
 			socket.emit('update', 'You are in a room. Please leave it first to create your own.');
 

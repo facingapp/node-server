@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Node-server by facingapp</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Node-server</h1>
+        <p>Server for Facing App</p>
+
+        <p class="view"><a href="https://github.com/facingapp/node-server">View the Project on GitHub <small>facingapp/node-server</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/facingapp/node-server/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/facingapp/node-server/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/facingapp/node-server">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><img src="https://raw.githubusercontent.com/manifestinteractive/facing/master/assets/logo/rectangle/logo_rectangle.jpg" alt="Facing Logo"></p>
+
+<h1>
+<a name="facing-server" class="anchor" href="#facing-server"><span class="octicon octicon-link"></span></a>Facing Server</h1>
+
+<p>This is a Node Server for handing communication between devices with the Facing App installed.</p>
+
+<h2>
+<a name="starting-server" class="anchor" href="#starting-server"><span class="octicon octicon-link"></span></a>Starting Server</h2>
+
+<h3>
+<a name="cloning-facing-server" class="anchor" href="#cloning-facing-server"><span class="octicon octicon-link"></span></a>Cloning Facing Server</h3>
+
+<div class="highlight highlight-bash"><pre><span class="nv">$ </span><span class="nb">cd</span> /path/to/facing/server
+<span class="nv">$ </span>git clone -b stable https://github.com/manifestinteractive/facing-server.git .
+</pre></div>
+
+<h3>
+<a name="configuring-node" class="anchor" href="#configuring-node"><span class="octicon octicon-link"></span></a>Configuring Node</h3>
+
+<p>You will need Node.js and Node Package Manager (NPM) installed on your server.  Once you have these installed, you can run the following commands.</p>
+
+<div class="highlight highlight-bash"><pre><span class="nv">$ </span>sudo npm install -g forever
+<span class="nv">$ </span><span class="nb">cd</span> /path/to/facing/server
+<span class="nv">$ </span>npm install
+<span class="nv">$ </span>forever start server.js
+</pre></div>
+
+<h3>
+<a name="optional-use-with-nginx" class="anchor" href="#optional-use-with-nginx"><span class="octicon octicon-link"></span></a>Optional use with Nginx</h3>
+
+<div class="highlight highlight-bash"><pre><span class="nv">$ </span>sudo nano /etc/nginx/conf.d/facing.conf
+</pre></div>
+
+<div class="highlight highlight-conf"><pre>upstream<span class="w"> </span>facing_upstream<span class="w"> </span>{<span class="w"></span>
+<span class="w">    </span>server<span class="w"> </span><span class="mf">127.0.0.1</span>:4000<span class="w"> </span>fail_timeout=120s;<span class="w"></span>
+<span class="w">    </span>keepalive<span class="w"> </span><span class="m">8</span>;<span class="w"></span>
+}<span class="w"></span>
+
+server<span class="w"> </span>{<span class="w"></span>
+<span class="w">    </span>listen<span class="w"> </span><span class="m">80</span>;<span class="w"></span>
+<span class="w">    </span>spdy_headers_comp<span class="w"> </span><span class="m">3</span>;<span class="w"></span>
+<span class="w">    </span>server_name<span class="w"> </span>app.youfacing.me;<span class="w"></span>
+<span class="w">    </span><span class="k">access_log</span><span class="w"> </span>/var/log/nginx/facing_access.log;<span class="w"></span>
+<span class="w">    </span>error_log<span class="w"> </span>/var/log/nginx/facing_error.log;<span class="w"></span>
+
+<span class="w">    </span>location<span class="w"> </span>/<span class="w"> </span>{<span class="w"></span>
+<span class="w">        </span>proxy_pass<span class="w">                  </span>http://facing_upstream;<span class="w"></span>
+<span class="w">        </span>proxy_redirect<span class="w">              </span><span class="no">off</span>;<span class="w"></span>
+<span class="w">        </span>proxy_buffering<span class="w">             </span><span class="no">off</span>;<span class="w"></span>
+
+<span class="w">        </span>proxy_set_header<span class="w">            </span>Host<span class="w"> </span>$host;<span class="w"></span>
+<span class="w">        </span>proxy_set_header<span class="w">            </span>X-Real-IP<span class="w"> </span>$remote_addr;<span class="w"></span>
+<span class="w">        </span>proxy_set_header<span class="w">            </span>X-Forwarded-for<span class="w"> </span>$remote_addr;<span class="w"></span>
+<span class="w">        </span>proxy_connect_timeout<span class="w">       </span><span class="m">120</span>;<span class="w"></span>
+<span class="w">        </span>proxy_send_timeout<span class="w">          </span><span class="m">120</span>;<span class="w"></span>
+<span class="w">        </span>proxy_read_timeout<span class="w">          </span><span class="m">180</span>;<span class="w"></span>
+
+<span class="w">        </span>proxy_http_version<span class="w">          </span><span class="m">1</span>.1;<span class="w"></span>
+<span class="w">        </span>proxy_set_header<span class="w">            </span>Connection<span class="w"> </span>"";<span class="w"></span>
+<span class="w">    </span>}<span class="w"></span>
+}<span class="w"></span>
+</pre></div>
+
+<h2>
+<a name="ios--android-application" class="anchor" href="#ios--android-application"><span class="octicon octicon-link"></span></a>iOS &amp; Android Application</h2>
+
+<p>If you would like to know what we're running on iOS &amp; Android, checkout our <a href="https://github.com/manifestinteractive/facing">facing</a> repository.</p>
+
+<h1>
+<a name="credits" class="anchor" href="#credits"><span class="octicon octicon-link"></span></a>Credits</h1>
+
+<p>Special Thanks to <a href="https://github.com/tamaspiros">@tamaspiros</a> for the development of the <a href="https://github.com/tamaspiros/advanced-chat">Advanced Chat</a> project, which the Facing Server is heavily based on.</p>
+
+<h1>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
+
+<p><img src="http://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png" alt="OSI Approved License" title="OSI Approved License"></p>
+
+<p><img src="http://www.gnu.org/graphics/lgplv3-147x51.png" alt="LGPL v3 license" title="LGPL v3 license"></p>
+
+<p><strong>Facing</strong> is currently licensed under the LGPL v3 license.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/facingapp">facingapp</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>

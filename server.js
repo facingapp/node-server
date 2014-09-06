@@ -106,13 +106,6 @@ io.sockets.on('connection', function(socket)
 			}
 			while(!exists);
 			socket.emit('exists', {msg: 'The username already exists, please pick another one.', proposedName: proposedName});
-
-			fn({
-				success: false,
-				message: 'You are already on the server.',
-				name: name,
-				device: device
-			});
 		}
 		else
 		{

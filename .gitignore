@@ -6,3 +6,4 @@ client/bin
 .classpath
 .project
 .idea
+*.log

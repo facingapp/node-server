@@ -113,13 +113,6 @@ io.sockets.on('connection', function(socket)
 			}
 			while(!exists);
 			socket.emit('exists', {msg: 'The username already exists, please pick another one.', proposedName: proposedName});
-
-			fn({
-				success: false,
-				message: 'You are already on the server.',
-				name: name,
-				device: device
-			});
 		}
 		else
 		{
@@ -164,10 +157,6 @@ io.sockets.on('connection', function(socket)
 				chatHistory[socket.room].push(people[socket.id].name + ': ' + msg);
 			}
 		}
-		else
-		{
-			socket.emit('update', 'Unable to Share Data');
-		}
 	});
 
 	socket.on('disconnect', function()
@@ -189,8 +178,7 @@ io.sockets.on('connection', function(socket)
 			return false;
 		}
 
-
-		if(typeof people[socket.id] !== 'undefined' && people[socket.id].inroom)
+		if(people[socket.id].inroom)
 		{
 			socket.emit('update', 'You are in a room. Please leave it first to create your own.');
 
@@ -339,19 +327,23 @@ io.sockets.on('connection', function(socket)
 				}
 			}
 		}
-		else
-		{
-			socket.emit('update', 'Please enter a valid name first.');
-			fn({ success: false, message: 'Please enter a valid name first.' });
-		}
 	});
 
-	socket.on('leaveRoom', function(id)
+	socket.on('leaveRoom', function(id, user_id, user_mode, fn)
 	{
 		var room = rooms[id];
 		if(room)
 		{
+			io.sockets.in(socket.room).emit('update', user_id + ' has left ' + id + ' room.');
+			io.sockets.in(socket.room).emit('leftSpace', id, user_id, user_mode);
+
+			fn({ success: true, message: user_id + ' has left ' + id + ' room.' });
+
 			purge(socket, 'leaveRoom');
+		}
+		else
+		{
+			fn({ success: false, message: 'Failed to remove ' + user_id + ' from ' + id + ' room.' });
 		}
 	});
 });

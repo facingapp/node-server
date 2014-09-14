@@ -150,10 +150,6 @@ io.sockets.on('connection', function(socket)
 				chatHistory[socket.room].push(people[socket.id].name + ': ' + msg);
 			}
 		}
-		else
-		{
-			socket.emit('update', 'Unable to Share Data');
-		}
 	});
 
 	socket.on('disconnect', function()
@@ -174,7 +170,6 @@ io.sockets.on('connection', function(socket)
 
 			return false;
 		}
-
 
 		if(people[socket.id].inroom)
 		{
@@ -325,19 +320,23 @@ io.sockets.on('connection', function(socket)
 				}
 			}
 		}
-		else
-		{
-			socket.emit('update', 'Please enter a valid name first.');
-			fn({ success: false, message: 'Please enter a valid name first.' });
-		}
 	});
 
-	socket.on('leaveRoom', function(id)
+	socket.on('leaveRoom', function(id, user_id, user_mode, fn)
 	{
 		var room = rooms[id];
 		if(room)
 		{
+			io.sockets.in(socket.room).emit('update', user_id + ' has left ' + id + ' room.');
+			io.sockets.in(socket.room).emit('leftSpace', id, user_id, user_mode);
+
+			fn({ success: true, message: user_id + ' has left ' + id + ' room.' });
+
 			purge(socket, 'leaveRoom');
+		}
+		else
+		{
+			fn({ success: false, message: 'Failed to remove ' + user_id + ' from ' + id + ' room.' });
 		}
 	});
 });

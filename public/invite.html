@@ -26,7 +26,7 @@
             isAndroid = navigator.userAgent.match('Android');
 
 	    try {
-		    document.getElementById('loader').src = 'facing://invite/' + invite;
+		    window.location.replace('facing://invite/' + invite);
 	    }
 	    catch(error)
 	    {

@@ -5,10 +5,6 @@
   <title>Facing App Launcher</title>
 </head>
 <body>
-
-    <!-- iframe used for attempting to load a custom protocol -->
-    <iframe style="display:none" height="0" width="0" id="loader"></iframe>
-
     <script>
     (function(){
 
@@ -25,22 +21,22 @@
         var isiOS = navigator.userAgent.match('iPad') || navigator.userAgent.match('iPhone') || navigator.userAgent.match('iPod'),
             isAndroid = navigator.userAgent.match('Android');
 
-	    try {
-		    window.location.replace('facing://invite/' + invite);
-	    }
-	    catch(error)
+	    if(!isiOS && !isAndroid)
 	    {
-		    // Mobile
-		    if (isiOS || isAndroid)
-		    {
-			    var appLink = (isAndroid)
-					    ? 'https://play.google.com/store/apps/details?id=' + app_id_android
-					    : 'itms-apps://itunes.apple.com/app/'+ app_name_ios +'/id' + app_id_ios + '?mt=8';
+		    window.location.replace(fallbackLink);
+		    return false;
+	    }
+	    else
+	    {
+		    window.location = 'facing://invite/' + invite;
 
-			    window.setTimeout(function(){
-				    window.location.replace(appLink);
-			    }, 1);
-		    }
+		    var appLink = (isAndroid)
+				    ? 'https://play.google.com/store/apps/details?id=' + app_id_android
+				    : 'itms-apps://itunes.apple.com/app/'+ app_name_ios +'/id' + app_id_ios + '?mt=8';
+
+		    window.setTimeout(function(){
+			    window.location.replace(appLink);
+		    }, 100);
 	    }
 
 	    window.setTimeout(function(){

@@ -28,7 +28,14 @@
 	    }
 	    else
 	    {
-		    window.location = 'facing://invite/' + invite;
+		    if(isAndroid)
+		    {
+			    window.open('facing://invite/' + invite);
+		    }
+		    else
+		    {
+			    window.location.replace('facing://invite/' + invite);
+		    }
 
 		    var appLink = (isAndroid)
 				    ? 'https://play.google.com/store/apps/details?id=' + app_id_android

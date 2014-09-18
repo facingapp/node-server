@@ -63,7 +63,7 @@ server.listen(app.get('port'), app.get('ipaddr'), function()
 	console.log('Facing App Server Started in ' + process.env.NODE_ENV + ' mode on port ' + configuration.app.port);
 });
 
-io.set('log level', 5);
+io.set('log level', 1);
 
 var people = {};
 var rooms = {};
@@ -76,13 +76,6 @@ io.sockets.on('connection', function(socket)
 	{
 		if(!name || name === '')
 		{
-			fn({
-				success: false,
-				message: 'Failed to Connect to Server',
-				name: name,
-				device: device
-			});
-
 			return false;
 		}
 

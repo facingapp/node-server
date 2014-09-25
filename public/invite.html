@@ -8,9 +8,6 @@
     <script>
     (function(){
 
-        var app_name_ios = 'manifestinteractive';
-        var app_id_ios = '920272388';
-        var app_id_android = 'com.manifestinteractive.facing';
         var invite = window.location.pathname;
             invite = invite.replace('/invite/', '');
 
@@ -39,7 +36,7 @@
 
 		    var appLink = (isAndroid)
 				    ? 'http://j.mp/facing-android'
-				    : 'itms-apps://itunes.apple.com/app/'+ app_name_ios +'/id' + app_id_ios + '?mt=8';
+				    : 'http://j.mp/facing-ios';
 
 		    window.setTimeout(function(){
 			    window.location.replace(appLink);
@@ -48,7 +45,7 @@
 
 	    window.setTimeout(function(){
 		    window.location.replace(fallbackLink);
-	    }, 1000);
+	    }, 200);
     })();
     </script>
 </body>
